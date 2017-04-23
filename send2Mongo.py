@@ -3,33 +3,30 @@ import os
 import sys
 
 client = MongoClient('localhost', 27017)
-db = client.eegDatabase
+db = client.accelDatabase
 
-eeg = sys.argv[1:]
+fileName= sys.argv[1]  #caller inputs data file to be read 
 
-dbLength = db.eegDatabase.count()
+with open(fileName, "r") as file:
+    accel = []
+    for line in file:
+        accel.append(line.strip('\n'))    #strip \n and store in accel array
 
-for x in range(0,len(eeg)):
-	results = db.eegDatabase.insert_one(
+
+dbLength = db.accelDatabase.count()
+
+if dbLength == 0:  #calculate event number for next data set
+	lastEvent = 0
+else:
+	for data in db.accelDatabase.find().skip(dbLength -1):
+			lastEvent = data['eventNum']
+		
+for x in range(0,len(accel)):		#post data to database 
+	results = db.accelDatabase.insert_one(
 		{	
-			str(dbLength): eeg[x]
+			"eventNum" : int(lastEvent + 1),
+			"accel" : accel[x]
 		}
 	)
 	dbLength = dbLength + 1
 	
-	
-	"""
-	eeg = sys.argv[1]
-	accel = sys.argv[2]
-
-for x in data:
-	results = db.eegDatabase.insert_one(
-		{	
-			str(i): x
-		}
-	)
-	
-
-	
-	
-	"""
