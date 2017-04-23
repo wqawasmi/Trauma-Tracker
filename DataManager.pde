@@ -26,6 +26,7 @@ class DataManager {
     return 1;
   }
   
+  // Read file contents into float array
   public float[] readData(String filename) {
     try {
       Scanner sc = new Scanner(new File(filename));
@@ -50,6 +51,7 @@ class DataManager {
     }
   }
   
+  // Calculate a running average of the last num points
   float getRunningAvg(ArrayList<Float> arr, int num) {
     if( arr.size() == 0 )
       return 0;
@@ -63,6 +65,8 @@ class DataManager {
     return tot/num;
   }
   
+  // Check if the recent data point is a significant event by
+  // comparing difference from average to a pre-defined treshhold
   public float isEvent(float val, ArrayList<Float> data, int type) {
     float avg = getRunningAvg(data, data.size() - 1);
     if( type == ACC && abs(val - avg) > ACC_THRESH) {

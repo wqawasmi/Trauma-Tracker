@@ -15,18 +15,21 @@ ArrayList<Float> eggList;
 ArrayList<Float> accList;
 ArrayList<Float> accFilter;
 
-int MAX_SIZE = 600;
+// Constants
+int MAX_SIZE = 600; // Max data points stored at a given time
 int EGG = 0;
 int ACC = 1;
 
+// Value prevents repetitive texts
 boolean SMS_SENT = false;
 
 DataManager mngr = new DataManager();
 
+// Individual plots for EEG and Accelerometer data
 public GPlot eegPlot, accPlot;
 
 void setup() {
-  size(1200, 700);
+  size(1200, 900);
   frameRate(60);
   
   /* start oscP5, listening for incoming messages at recvPort */
@@ -37,7 +40,7 @@ void setup() {
   eggList = new ArrayList<Float>();
   accList = new ArrayList<Float>();
   
-  // Setup for the second plot 
+  // setup plots
   eegPlot = new GPlot(this);
   eegPlot.setPos(0, 0);
   eegPlot.setDim(1200, 250);
@@ -55,9 +58,8 @@ void setup() {
 
 void draw() {
   background(49);
-  // Draw the second plot  
 
-
+  // Draw the plots
   fill(0, 0, 255);
   eegPlot.beginDraw();
   eegPlot.setPoints(toGArray(eggList));
@@ -86,6 +88,7 @@ void draw() {
   accPlot.endDraw();
 }
 
+// Convert an array list to GPointsArray for use with GPlot
 GPointsArray toGArray(ArrayList<Float> arr) {
   GPointsArray ret = new GPointsArray();
   
@@ -96,6 +99,7 @@ GPointsArray toGArray(ArrayList<Float> arr) {
   return ret;
 }
 
+// Conver ArrayList<Float> into a primitive float[] array
 float[] toPrimArray(ArrayList<Float> arr) {
   float[] floatArray = new float[arr.size()];
   int i = 0;
@@ -106,6 +110,7 @@ float[] toPrimArray(ArrayList<Float> arr) {
   return floatArray;
 }
 
+// Add point to appropriate data sent and remove the oldest point if necessary
 void addPoint(int type, float val) {
   if( type == EGG ) {
     
@@ -122,7 +127,9 @@ void addPoint(int type, float val) {
   }
 }
 
+// Event handler for OSC, all data comes through here
 void oscEvent(OscMessage msg) {
+  // Check if message was EEG data or Accelerometer data
   if (msg.checkAddrPattern("/muse/eeg")==true) {
     float val = msg.get(0).floatValue();
     addPoint(EGG, val);
@@ -130,20 +137,21 @@ void oscEvent(OscMessage msg) {
   else if(msg.checkAddrPattern("/muse/acc")==true) {
     float val = msg.get(0).floatValue();
     addPoint(ACC, val);
+    // Check if accelerometer picked up a significant spike
     if( mngr.isEvent(val, accList, ACC) >  0 ) {
+      // Send SMS using Twilio to alert the user/parent
       if( SMS_SENT == false ) {
         SMS_SENT = true;
         try {
           System.out.println("GOT EVENT, SENDING SMS");
           Process p = Runtime.getRuntime().exec("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\send_sms.py \"Yellow Event Detected!\" 9732199841");
+          // read the output from the command
           BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
           BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-           // read the output from the command
           String s;
           while ((s = stdInput.readLine()) != null) {
               System.out.println(s);
           }
-          
           while ((s = stdError.readLine()) != null) {
               System.out.println(s);
           }
