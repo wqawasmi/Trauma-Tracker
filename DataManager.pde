@@ -3,7 +3,7 @@ import java.util.*;
 class DataManager {
   int EGG = 0;
   int ACC = 1;
-  int ACC_THRESH = 1500;
+  int ACC_THRESH = 400;
   
   public DataManager() {
     System.out.println("Initialized Data Manager...");
@@ -71,9 +71,9 @@ class DataManager {
     float avg = getRunningAvg(data, data.size() - 1);
     if( type == ACC && abs(val - avg) > ACC_THRESH) {
       System.out.println("Got event: " + val);
-      return (val - avg)/ACC_THRESH;
+      return (val - avg);
     }
-      
+    
     return 0;
   }
 }
