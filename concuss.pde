@@ -36,6 +36,7 @@ int numRecEgg;
 int numRecAcc;
 boolean recording = false;
 int lastEvent = 0;
+int eventNum = 0;
 
 // Pulled events from MongoDB
 ArrayList<ArrayList<Float>> events;
@@ -98,30 +99,36 @@ void draw() {
   
   // Draw the event list
   // Event 1
-  stroke(0);
-  fill(255, 180, 30);
-  rect(width/2 - 600, height - 175, 400, 30);
-  fill(0);
-  textSize(20);
-  text("Event at 4/23/2017 at 8:00AM", width/2 - 555, height - 152);
+  if(eventNum >= 1) {
+    stroke(0);
+    fill(255, 180, 30);
+    rect(width/2 - 600, height - 175, 400, 30);
+    fill(0);
+    textSize(20);
+    text("Event " + eventNum + " on 04/23/2017", width/2 - 515, height - 152);
+  }
   
   // Event 2
-  fill(255, 180, 30);
-  rect(width/2 - 600, height - 125, 400, 30);
-  fill(0);
-  textSize(20);
-  text("Event at 4/23/2017 at 7:50AM", width/2 - 555, height - 102);
+  if(eventNum >= 2) {
+    fill(255, 180, 30);
+    rect(width/2 - 600, height - 125, 400, 30);
+    fill(0);
+    textSize(20);
+    text("Event " + (eventNum - 1) + " on 04/23/2017", width/2 - 515, height - 102);
+  }
   
   // Event 3
-  fill(255, 180, 30);
-  rect(width/2 - 600, height - 75, 400, 30);
-  fill(0);
-  textSize(20);
-  text("Event at 4/23/2017 at 7:33AM", width/2 - 555, height - 52);
-  
+  if(eventNum >= 3) {
+    fill(255, 180, 30);
+    rect(width/2 - 600, height - 75, 400, 30);
+    fill(0);
+    textSize(20);
+    text("Event " + (eventNum - 2) + " on 04/23/2017", width/2 - 515, height - 52);
+  }
+    
   // Draw the status
   textSize(90);
-  if( frameCount - lastEvent > 200 ) {
+  if( frameCount > 200 ) {
     switch(status) {
       case "Normal Levels":
         fill(0, 255, 100);
@@ -177,9 +184,11 @@ void draw() {
     
 }
 
-// Pulls events from MongoDB
+// Retrieve number of events from MongoDB
 void pullData() {
-  
+    runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\getNumOfEvents.py numEvents.txt");
+    eventNum = (int)mngr.readData("numEvents.txt")[0];
+    System.out.println("Found " + eventNum + " events!");
 }
 
 // Convert an array list to GPointsArray for use with GPlot
@@ -281,12 +290,13 @@ void oscEvent(OscMessage msg) {
       numRecAcc--;
       if(numRecAcc == 0) {
         mngr.saveData(recAcc, "recData.txt");
-        runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\plotData.py");
+        runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\send2Mongo.py recData.txt");
         numRecAcc = 0;
         numRecEgg = 0;
         System.out.println("Finished recording!");
         numRecAcc = 0;
         recording = false;
+        pullData();
       }
     }
     addPoint(ACC, val);
@@ -300,9 +310,9 @@ void oscEvent(OscMessage msg) {
         System.out.println("GOT EVENT, SENDING SMS");
         runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\send_sms.py \"Yellow Event Detected!\" 9732199841");
         startRecord();
+        pullData();
       }
-      
-      pullData();
+     
     }
     if( levels > YELLOW_THRESH && SMS_SENT == false) {
       status = "Yellow Levels";
@@ -324,14 +334,20 @@ boolean overRect(int x, int y, int width, int height)  {
 // Check if event buttons were pressed
 void mousePressed() {
   // Check for event 1
-  if( overRect(width/2 - 600, height - 175, 400, 30) ) {
+  if( overRect(width/2 - 600, height - 175, 400, 30) && eventNum >= 1) {
     System.out.println("Event 1 clicked!");
+    runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\getMongoData.py recData.txt " + eventNum);
+    runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\plotData.py");
   }
-  else if( overRect(width/2 - 600, height - 125, 400, 30) ) {
+  else if( overRect(width/2 - 600, height - 125, 400, 30) && eventNum >= 2) {
     System.out.println("Event 2 clicked!");
+    runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\getMongoData.py recData.txt " + (eventNum - 1));
+    runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\plotData.py");
   }
-  else if( overRect(width/2 - 600, height - 75, 400, 30) ) {
+  else if( overRect(width/2 - 600, height - 75, 400, 30) && eventNum >= 3) {
     System.out.println("Event 3 clicked!");
+    runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\getMongoData.py recData.txt "  + (eventNum - 2));
+    runProcess("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\plotData.py");
   }
 }
  
