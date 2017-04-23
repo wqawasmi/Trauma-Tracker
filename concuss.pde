@@ -1,5 +1,6 @@
 import oscP5.*;
 import grafica.*;
+import java.io.*;
 
 // OSC PARAMETERS & PORTS
 int recvPort = 5000;
@@ -17,6 +18,8 @@ ArrayList<Float> accFilter;
 int MAX_SIZE = 600;
 int EGG = 0;
 int ACC = 1;
+
+boolean SMS_SENT = false;
 
 DataManager mngr = new DataManager();
 
@@ -40,7 +43,7 @@ void setup() {
   eegPlot.setDim(1200, 250);
   eegPlot.getTitle().setText("EGG Readings");
   eegPlot.getXAxis().getAxisLabel().setText("Time");
-  eegPlot.getYAxis().getAxisLabel().setText("EGG");
+  eegPlot.getYAxis().getAxisLabel().setText("EEG");
   
   accPlot = new GPlot(this);
   accPlot.setPos(0, 300);
@@ -128,7 +131,27 @@ void oscEvent(OscMessage msg) {
     float val = msg.get(0).floatValue();
     addPoint(ACC, val);
     if( mngr.isEvent(val, accList, ACC) >  0 ) {
-      System.out.println("GOT EVENT");
+      if( SMS_SENT == false ) {
+        SMS_SENT = true;
+        try {
+          System.out.println("GOT EVENT, SENDING SMS");
+          Process p = Runtime.getRuntime().exec("python C:\\Users\\Waleed\\Documents\\Processing\\concuss\\send_sms.py \"Yellow Event Detected!\" 9732199841");
+          BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+          BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+           // read the output from the command
+          String s;
+          while ((s = stdInput.readLine()) != null) {
+              System.out.println(s);
+          }
+          
+          while ((s = stdError.readLine()) != null) {
+              System.out.println(s);
+          }
+        }
+        catch(IOException e) {
+          System.out.println("Something went wrong: " + e.toString());
+        }
+      }
     }
   }
   

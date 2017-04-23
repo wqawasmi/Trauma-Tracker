@@ -3,7 +3,7 @@ import java.util.*;
 class DataManager {
   int EGG = 0;
   int ACC = 1;
-  int ACC_THRESH = 800;
+  int ACC_THRESH = 1500;
   
   public DataManager() {
     System.out.println("Initialized Data Manager...");
