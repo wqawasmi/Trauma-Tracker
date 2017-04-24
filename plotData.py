@@ -1,7 +1,7 @@
 # Reads in recData.txt and plots it using matplotlib
 
 import matplotlib.pyplot as plt
-import seaborn
+#import seaborn
 
 data = []
 with open("recData.txt") as f:
