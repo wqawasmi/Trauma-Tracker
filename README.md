@@ -1,3 +1,6 @@
+## How to Run
+Run concuss.pde in Processing
+
 ## Inspiration
 There has been extensive medical research correlating changes in EEG with concussions and trauma. These monitors have been limited to researchers until recent developments in commercial EEG monitors. Today we bring you a portable concussion/trauma monitor that utilizes the Muse headband and can be placed in any helmet belonging to you or your children.
 
